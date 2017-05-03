@@ -383,7 +383,7 @@ jQuery(document).ready(function($) {
             blankNode: {
                 '@id': 'blankNode',
                 '@type': '@id',
-                '@container': '@set '
+                '@container': '@set'
             }
         };
 
@@ -432,8 +432,6 @@ jQuery(document).ready(function($) {
             if (inputFields[key].value === 'http://www.w3.org/ns/shacl#BlankNode') {
                 var graphBlank = triple.child();
                 triple.blankNode.push(graphBlank);
-            } else if (inputFields[key].node !== undefined) {
-                console.log("hall0");
             } else {
                 triple[data[key].label] = inputFields[key].value;
             }
