@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Semantic Builder Engine</title>
+
+    <link rel="stylesheet" type="text/css" href="public/stylesheets/normalize.css">
+    <link rel="stylesheet" type="text/css" href="public/stylesheets/skeleton.css">
+    <link rel="stylesheet" type="text/css" href="public/stylesheets/form-builder.css">
+    <link rel="stylesheet" type="text/css" href="public/stylesheets/style.css">
+
+    <script src="public/javascripts/jquery_2.1.4.js"></script>
+    <script src="public/javascripts/jqueryui_1.11.4.js"></script>
+    <script src="public/javascripts/form-builder.js"></script>
+    <script src="public/javascripts/form-render.js"></script>
+    <script src="public/javascripts/engine.js"></script>
+    <script src="public/javascripts/simplerdf.browser.js"></script>
+
+
+</head>
+
+<body>
+
+<div class="container">
+    <div class="row">
+        <div class="twelve columns">
+            <h3>SHACL Builder</h3>
+        </div>
+    </div>
+    <div class="row">
+        <div class="six columns ui-menu ">
+            <form action="#" id="shacl-form" class="cl-shacl-generator">
+                <label>Formular Klasse</label>
+                <input type="text" name="shaclClass" class="generateShaclClass" size="40">
+                <input type="submit" id="generateShacl" value="Generieren">
+            </form>
+
+            <!-- Form Builder -->
+            <div class="cl-form-builder">
+                <h3>Form Builder</h3>
+            </div>
+
+            <div class="cl-form-builder">
+                <label>Subject</label>
+                <input type="text" id="subject" name="subject" value="http://example.org/subject" size="40">
+                <form action="#" id="html-form">
+                    <div class="fb-render"> </div>
+                    <input type="submit" id="generateRDF" value="RDF Go">
+                </form>
+            </div>
+
+            <!-- RDF -->
+            <div class="cl-rdf">
+                <h3>RDF</h3>
+            </div>
+            <div class="cl-rdf-graph">
+                <div id="rdf-graph"></div>
+            </div>
+        </div>
+
+        <div class="two columns">
+            <button type="button" id="add-shacl">add field</button>
+            <button type="button" id="reset">Reset</button>
+        </div>
+
+        <div class="four columns info">
+            <h4>Konsole</h4>
+        </div>
+    </div>
+</div>
+</body>
+</html>
