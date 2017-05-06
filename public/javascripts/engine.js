@@ -175,6 +175,7 @@ jQuery(document).ready(function($) {
         });
 
         $.each(propertySave, function (keyA) {
+
             $.each(propertySave[keyA], function (keyB) {
 
                 if (hasSubGraph(propertySave[keyA][keyB]) === true) {
@@ -239,15 +240,17 @@ jQuery(document).ready(function($) {
         // SHACL SUB GRAPH
 
         $.each(shaclGraphsSub, function (keyA) {
-            $.each(propertySubSave, function (keyB) {
+            if (propertySubSave[keyA] !== undefined) {
+                $.each(propertySubSave[keyA], function (keyB) {
 
-                var graphSubNodeProperty = shaclGraphsSub[keyA].child();
+                    var graphSubNodeProperty = shaclGraphsSub[keyA].child();
 
-                graphSubNodeProperty['path'] = propertySubSave[keyA][keyB].value;
-                graphSubNodeProperty['name'] = propertySubSave[keyA][keyB].value;
+                    graphSubNodeProperty['path'] = propertySubSave[keyA][keyB].value;
+                    graphSubNodeProperty['name'] = propertySubSave[keyA][keyB].value;
 
-                 shaclGraphsSub[keyA].property.push(graphSubNodeProperty);
-            });
+                     shaclGraphsSub[keyA].property.push(graphSubNodeProperty);
+                });
+            }
          });
 
         // Output Konsole
@@ -468,8 +471,6 @@ jQuery(document).ready(function($) {
                 });
                 triple[shaclData[keyA].name].push(graphBlankNode[keyA]);
             }
-
-
         });
         console.log("RDF DATA GRAPH:");
         console.log(triple.toString());
