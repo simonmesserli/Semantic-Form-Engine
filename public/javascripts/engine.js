@@ -24,7 +24,7 @@ jQuery(document).ready(function($) {
         e.preventDefault();
         if (x < max_fields){ //max input box allowed
             x++; //text box increment
-            newField(null, "property", "generateShaclText");
+            newField("property", "generateShaclText");
         }
             // Checkbox checked
             $("#checkBoxProperty" + x + "").change(function(){
@@ -40,7 +40,7 @@ jQuery(document).ready(function($) {
     // Button Add Field in Sub
     $('#shacl-form').on("click", ".sub", function(e) {
         e.preventDefault();
-        newField(null, "propertySub", "generateShaclTextSub");
+        newField("propertySub", "generateShaclTextSub");
     });
 
     /**
@@ -55,15 +55,6 @@ jQuery(document).ready(function($) {
 
         // Convert form input to array
         var inputShaclBuilder = $(this).serializeArray();
-
-        // 2 sub
-        //inputShaclBuilder = [{"name":"shaclClass","value":"http://schema.org/Person"},{"name":"hasSub","value":"on"},{"name":"property1","value":"http://schema.org/address"},{"name":"shaclClassSub1","value":"http://schema.org/PostalAddress"},{"name":"propertySub1","value":"http://schema.org/streetAddress"},{"name":"hasSub","value":"on"},{"name":"property2","value":"http://xmlns.com/foaf/0.1/knows"},{"name":"shaclClassSub2","value":"http://dbpedia.org/ontology/Cat"},{"name":"propertySub2","value":"http://xmlns.com/foaf/0.1/familyName"}]
-
-        // 1 sub
-        //inputShaclBuilder = [{"name":"shaclClass","value":"http://schema.org/Person"},{"name":"hasSub","value":"on"},{"name":"property1","value":"http://schema.org/address"},{"name":"shaclClassSub1","value":"http://schema.org/PostalAddress"},{"name":"propertySub1","value":"http://schema.org/streetAddress"}]
-
-        //normal
-        // inputShaclBuilder = [{"name":"shaclClass","value":"http://schema.org/Person"},{"name":"property1","value":"http://schema.org/givenName"},{"name":"property2","value":"http://schema.org/familyName"}]
 
         console.log("Input HTML fields Shacl Builder: " + JSON.stringify(inputShaclBuilder));
 
@@ -103,7 +94,6 @@ jQuery(document).ready(function($) {
         };
 
         shaclGraph = new SimpleRDF(shaclContext, 'http://www.w3.org/ns/shacl#PersonShape');
-
         var shaclGraphsSub = [];
 
         $.each(inputShaclBuilder, function (key) {
@@ -125,23 +115,80 @@ jQuery(document).ready(function($) {
         console.log("shaclGraphMain: " + shaclGraph.toString());
         console.log("shaclGraphsSub: " + shaclGraphsSub.toString());
 
-        var propertySubArray = [];
+        // COLLECT DATA
+
+        var propertySave = [];
+        var resultProperty;
+        $.each(inputShaclBuilder, function (key) {
+             resultProperty = $.grep(inputShaclBuilder, function(e){
+                return e.name === 'property' + key;
+            });
+
+            if (resultProperty.length !== 0) {
+                propertySave.push(resultProperty)
+            }
+        });
+
+        var shaclClassSubSave = [];
+        var resultshaclClassSub;
+        $.each(inputShaclBuilder, function (key) {
+            resultshaclClassSub = $.grep(inputShaclBuilder, function(e){
+                return e.name === 'shaclClassSub' + key;
+            });
+            if (resultshaclClassSub.length !== 0) {
+                shaclClassSubSave.push(resultshaclClassSub)
+            }
+        });
+
+        var propertySubSave = [];
+        var resultPropertySub;
+
+        $.each(inputShaclBuilder, function (key) {
+            resultPropertySub = $.grep(inputShaclBuilder, function(e){
+                return e.name === 'propertySub' + key;
+            });
+            if (resultPropertySub.length !== 0) {
+                propertySubSave.push(resultPropertySub)
+            }
+        });
+
+        // Prepare for graph
+        var nodeX = [];
+
+        $.each(shaclClassSubSave, function (keyA) {
+            nodeX[keyA] =  shaclClassSubSave[keyA];
+            if (propertySubSave[keyA] !== undefined) {
+                $.each(propertySubSave[keyA], function (keyB) {
+                    nodeX[keyA].push(propertySubSave[keyA][keyB])
+                });
+            }
+        });
+
 
         // Graph it (SHACL GRAPH)
 
+        // SHACL GRAPH CLASS
         $.each(inputShaclBuilder, function (key) {
-            if (inputShaclBuilder[key] !== undefined) {
                 if (inputShaclBuilder[key].name === 'shaclClass') {
                     shaclGraph['targetClass'] = inputShaclBuilder[key].value;
-                } else if (inputShaclBuilder[key].name === 'hasSub' && inputShaclBuilder[key].value === 'on') {
-                    var nameID = inputShaclBuilder[key+1].name.split('property')[1];
+                }
+        });
 
+        $.each(propertySave, function (keyA) {
+            $.each(propertySave[keyA], function (keyB) {
+
+                if (hasSubGraph(propertySave[keyA][keyB]) === true) {
+
+                    var nameID = propertySave[keyA][keyB].name.split('property')[1]
                     var graphSubNode = shaclGraph.child();
 
+                    //get class
+                    var propertyClass = getClass(propertySave[keyA][keyB]);
+
                     // Predicate and Class for BlankNode
-                    graphSubNode['class'] = inputShaclBuilder[key + 2].value;
-                    graphSubNode['path'] = inputShaclBuilder[key + 1].value;
-                    graphSubNode['name'] = inputShaclBuilder[key + 1].value;
+                    graphSubNode['class'] = propertyClass;
+                    graphSubNode['path'] = propertySave[keyA][keyB].value;
+                    graphSubNode['name'] = propertySave[keyA][keyB].value;
 
                     // Node to connect other graph
                     graphSubNode['node'] = 'http://www.w3.org/ns/shacl#NewShape' + nameID ;
@@ -150,45 +197,58 @@ jQuery(document).ready(function($) {
                     // Add to main graph
                     shaclGraph.property.push(graphSubNode);
 
-                    var elementKeytoDel;
-                    $.each(inputShaclBuilder, function (key) {
-                        if (inputShaclBuilder[key].name === 'propertySub' + nameID) {
-                            propertySubArray.push(inputShaclBuilder[key]);
-                            elementKeytoDel = key;
-                        }
-                    });
-                    // remove element which is already in subarray
-                    inputShaclBuilder.splice(elementKeytoDel, 1);
-
-                    $.each(propertySubArray, function (key) {
-                        var graphSubNodeProperty = shaclGraphsSub[key].child();
-
-                        graphSubNodeProperty['path'] = propertySubArray[key].value;
-                        graphSubNodeProperty['name'] = propertySubArray[key].value;
-
-                        shaclGraphsSub[key].property.push(graphSubNodeProperty);
-
-                    });
-
-                    // remove unused element
-                    inputShaclBuilder.splice(key + 2, 1);
-                    inputShaclBuilder.splice(key + 1, 1);
-
-                    if (inputShaclBuilder[key].name === 'hasSub') {
-                        // remove Checkbox
-                        Array.prototype.splice(inputShaclBuilder[key], 1);
-                    }
 
                 } else {
                     var graphTemp = shaclGraph.child();
 
-                    graphTemp['path'] = inputShaclBuilder[key].value;
-                    graphTemp['name'] = inputShaclBuilder[key].value;
+                    graphTemp['path'] = propertySave[keyA][keyB].value;
+                    graphTemp['name'] = propertySave[keyA][keyB].value;
 
                     shaclGraph.property.push(graphTemp);
                 }
-            }
+
+            });
         });
+
+        function hasSubGraph(propertyName) {
+            var namePropertyID = propertyName.name.split('property')[1];
+            var subGraphExists = false;
+            $.each(nodeX, function (key) {
+                var namePropertySubID = nodeX[key][0].name.split('shaclClassSub')[1];
+                if (namePropertyID === namePropertySubID) {
+                    subGraphExists = true;
+                    return false;
+                }
+            });
+            return subGraphExists;
+        }
+
+        function getClass(propertyName) {
+            var namePropertyID = propertyName.name.split('property')[1];
+            var propertyClass;
+            $.each(nodeX, function (key) {
+                var namePropertySubID = nodeX[key][0].name.split('shaclClassSub')[1];
+                if (namePropertyID === namePropertySubID) {
+                    propertyClass = nodeX[key][0].value;
+                    return false;
+                }
+            });
+            return propertyClass;
+        }
+
+        // SHACL SUB GRAPH
+
+        $.each(shaclGraphsSub, function (keyA) {
+            $.each(propertySubSave, function (keyB) {
+
+                var graphSubNodeProperty = shaclGraphsSub[keyA].child();
+
+                graphSubNodeProperty['path'] = propertySubSave[keyA][keyB].value;
+                graphSubNodeProperty['name'] = propertySubSave[keyA][keyB].value;
+
+                 shaclGraphsSub[keyA].property.push(graphSubNodeProperty);
+            });
+         });
 
         // Output Konsole
         console.log("Shacl Shape Graph (RDF): " + shaclGraph.toString());
@@ -205,14 +265,12 @@ jQuery(document).ready(function($) {
 
         console.log("shaclGraphComplete: " + shaclGraphComplete);
 
-
         /**
          * PART III: CONVERT SHACL SHAPE GRAPH TO JSON
          */
 
         // Convert Shacl Shape Graph to JSON
         var shaclForm = [];
-        var shaclFormTemp = [];
 
         $.each(shaclGraph['property']._array, function (key) {
             // load properties and output
@@ -224,34 +282,14 @@ jQuery(document).ready(function($) {
             var shaclNodeKind = shaclGraph['property']._array[key].nodeKind;
             var shaclClass = shaclGraph['property']._array[key].class;
 
-            if (shaclNode !== undefined) {
-
-                $.each(shaclGraphsSub, function (keyA) {
-                    $.each(shaclGraphsSub[keyA]['property']._array, function (keyB) {
-                        var shaclPathSub = shaclGraphsSub[keyA]['property']._array[keyB].path;
-                        var shaclNameSub = shaclGraphsSub[keyA]['property']._array[keyB].name;
-                        var shaclNodeSub = shaclGraphsSub[keyA].iri()['nominalValue'];
-
-                        var shaclNodeKindSub = shaclGraphsSub[keyA]['property']._array[keyB].nodeKind;
-                        var shaclClassSub = shaclGraphsSub[keyA]['property']._array[keyB].class;
-
-                        shaclFormTemp[keyA] = {
-                            "type": "text",
-                            "label": shaclPathSub,
-                            "name": shaclNameSub,
-                            "class": "inputSub",
-                            "parentNode": shaclNodeSub
-                        };
-                    });
-                });
-            }
             // Exclude BlankNode
             if (shaclNodeKind === 'http://www.w3.org/ns/shacl#BlankNode') {
                 shaclForm[key] = {
                     "type": "hidden",
                     "label": "blankNode",
                     "name": shaclPath,
-                    "value": shaclNodeKind
+                    "value": shaclNodeKind,
+                    "classBN": shaclClass
                 };
             } else {
                 shaclForm[key] = {
@@ -261,6 +299,47 @@ jQuery(document).ready(function($) {
                 }
             }
         });
+
+        var shaclFormTemp = [];
+
+        $.each(shaclGraphsSub, function (keyA) {
+            $.each(shaclGraphsSub[keyA]['property']._array, function (keyB) {
+                // load properties and output
+                console.log(shaclGraphsSub[keyA]['property']._array[keyB].path);
+
+                var shaclPathSub = shaclGraphsSub[keyA]['property']._array[keyB].path;
+                var shaclNameSub = shaclGraphsSub[keyA]['property']._array[keyB].name;
+                var shaclNodeSub = shaclGraphsSub[keyA].iri()['nominalValue'];
+
+                var shaclNodeKindSub = shaclGraphsSub[keyA]['property']._array[keyB].nodeKind;
+                var shaclClassSub = shaclGraphsSub[keyA]['property']._array[keyB].class;
+
+                // Find parentPath
+                var shaclParentPath = findParentPath(shaclNodeSub);
+
+                shaclFormTemp.push(
+                    {
+                        "type": "text",
+                        "label": shaclPathSub,
+                        "name": shaclNameSub,
+                        "class": "inputSub",
+                        "parentNode": shaclNodeSub,
+                        "parentPath": shaclParentPath
+                    }
+                )
+            });
+        });
+
+        function findParentPath (shaclNodeSub) {
+            var parentPath;
+            $.each(shaclGraph['property']._array, function (key) {
+                if (shaclGraph['property']._array[key].node === shaclNodeSub) {
+                    parentPath = shaclGraph['property']._array[key].path;
+                    return false;
+                }
+            });
+            return parentPath;
+        }
 
         // Merge all graphs to one array
         shaclForm = $.merge(shaclForm, shaclFormTemp);
@@ -327,52 +406,38 @@ jQuery(document).ready(function($) {
         $('.cl-rdf').toggle();
 
         // Parse JSON
-        var data = JSON.parse(localStorage.getItem('shaclForm'));
+        var shaclData = JSON.parse(localStorage.getItem('shaclForm'));
 
         // Load values to Array
         var inputFields = $(this).serializeArray();
 
-        console.log("Input Data Fields: " + JSON.stringify(inputFields));
-
+        console.log("Input USERDATA from Fields: " + JSON.stringify(inputFields));
 
         var contextGraph = {
             '@type': {
                 '@id': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
                 '@type': '@id'
-            },
-            blankNode: {
-                '@id': 'blankNode',
-                '@type': '@id',
-                '@container': '@set'
             }
         };
-
-        /*
-        var contextGraphNew = {
-            '@graph': {
-                '@id': "http://example.org/s",
-                '@type': "http://schema.org/Person",
-                'http://schema.org/address': {
-                    '@id': "_:b0"
-                }
-
-            {
-                '@id': '_:b0',
-                "http://schema.org/streetAddress": "haselweg 15"
-            }
-
-        };
-        */
 
         // Generate dynamic context for Graph
         $.each(inputFields, function (key) {
 
-            console.log("data Input: " + JSON.stringify(data[key]));
+            console.log("Data Shacl Input: " + JSON.stringify(shaclData[key]));
 
-            if (inputFields[key].value === 'http://www.w3.org/ns/shacl#BlankNode') {
-                contextGraph['blankNode']['@id'] = data[key].name
+            if (shaclData[key].value === 'http://www.w3.org/ns/shacl#BlankNode') {
+                contextGraph[shaclData[key].name] = {
+                    '@id': inputFields[key].name,
+                    '@type': '@id',
+                    '@container': '@set'
+                }
+            } else if (shaclData[key].parentNode !== undefined) {
+                contextGraph[shaclData[key].label] = {
+                    '@id': inputFields[key].name,
+                    '@container': '@set'
+                    };
             } else {
-                contextGraph[data[key].label] = data[key].name;
+                contextGraph[shaclData[key].label] = inputFields[key].name;
             }
         });
 
@@ -384,15 +449,29 @@ jQuery(document).ready(function($) {
         triple['@type'] = shaclGraph['targetClass'];
 
         // make Graph
-        $.each(inputFields, function (key) {
-            if (inputFields[key].value === 'http://www.w3.org/ns/shacl#BlankNode') {
-                var graphBlank = triple.child();
-                triple.blankNode.push(graphBlank);
-            } else {
-                triple[data[key].label] = inputFields[key].value;
-            }
-        });
+        var graphBlankNode = [];
+        $.each(inputFields, function (keyA) {
 
+            if (shaclData[keyA].label !== 'blankNode' && shaclData[keyA].parentNode === undefined) {
+                triple[shaclData[keyA].name] = inputFields[keyA].value;
+            }
+
+            if (shaclData[keyA].label === 'blankNode' && shaclData[keyA].type === 'hidden') {
+                graphBlankNode[keyA] = triple.child();
+
+                graphBlankNode[keyA]['@type'] = shaclData[keyA].classBN;
+
+                $.each(inputFields, function (keyB) {
+                   if (shaclData[keyA].name === shaclData[keyB].parentPath) {
+                       graphBlankNode[keyA][shaclData[keyB].name] = inputFields[keyB].value;
+                   }
+                });
+                triple[shaclData[keyA].name].push(graphBlankNode[keyA]);
+            }
+
+
+        });
+        console.log("RDF DATA GRAPH:");
         console.log(triple.toString());
 
         $.each(triple, function (key) {
@@ -406,7 +485,7 @@ jQuery(document).ready(function($) {
      *
      *  FUNCTIONS
      *
-     *  **/
+     **/
 
     // LOV API Function (search)
     function lovAPI(type) {
@@ -462,12 +541,11 @@ jQuery(document).ready(function($) {
 
             }
         };
-
         return lovAPIOptions;
     }
 
     // Generates new HTML Input Field
-    function newField(parentID, name, className) {
+    function newField(name, className) {
         $('<div class= ' + className + '>' +
             '<input type="checkbox" name="hasSub" id="checkBoxProperty' + x + '"/>' +
             '<input type="text" name="'+ name + x + '" size="40" />' +
