@@ -93,7 +93,7 @@ jQuery(document).ready(function($) {
             }
         };
 
-        shaclGraph = new SimpleRDF(shaclContext, 'http://www.w3.org/ns/shacl#PersonShape');
+        shaclGraph = new SimpleRDF(shaclContext, 'http://www.w3.org/ns/shacl#NewShape');
         var shaclGraphsSub = [];
 
         $.each(inputShaclBuilder, function (key) {
@@ -180,7 +180,7 @@ jQuery(document).ready(function($) {
 
                 if (hasSubGraph(propertySave[keyA][keyB]) === true) {
 
-                    var nameID = propertySave[keyA][keyB].name.split('property')[1]
+                    var nameID = propertySave[keyA][keyB].name.split('property')[1];
                     var graphSubNode = shaclGraph.child();
 
                     //get class
@@ -268,8 +268,60 @@ jQuery(document).ready(function($) {
 
         console.log("shaclGraphComplete: " + shaclGraphComplete);
 
+        // Import existing SHACL GRAPH
+
+        var parser = new N3Parser();
+
+        var tripleParsed;
+        var graphInput = rdf.createGraph();
+
+        parser.process('<http://www.w3.org/ns/shacl#PersonShape> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/shacl#NodeShape> .' +
+            '<http://www.w3.org/ns/shacl#PersonShape> <http://www.w3.org/ns/shacl#targetClass> <http://schema.org/Person> .' +
+            '<http://www.w3.org/ns/shacl#PersonShape> <http://www.w3.org/ns/shacl#property> [' +
+            ' <http://www.w3.org/ns/shacl#path> <http://schema.org/givenName> ;' +
+            ' <http://www.w3.org/ns/shacl#name> <http://schema.org/givenName> ] .', function (triple) {
+
+            console.log(triple.toString());
+
+            tripleParsed = rdf.createTriple(triple.subject, triple.predicate, triple.object);
+
+            graphInput.add(tripleParsed);
+
+        }).then(function () {
+
+            console.log("Graph durch String Input");
+            console.log(graphInput.toString());
+            console.log(graphInput);
+
+
+            var newShaclGraph = new SimpleRDF(shaclContext, 'http://www.w3.org/ns/shacl#PersonShape', graphInput);
+
+            /*
+             // Das ist der Code, wie ein Array für ein Property gemacht würde
+             var propertyChild = newShaclGraph.child();
+
+             propertyChild['name'] = (triple.object);
+             propertyChild['path'] = (triple.object);
+
+             newShaclGraph['property'].push(propertyChild);
+             */
+
+            console.log("In der nächste sollte jetzt <http://schema.org/givenName> kommen");
+            $.each(graphInput['property']._array, function (key) {
+               console.log(newShaclGraph['property']._array[key].path);
+               console.log(newShaclGraph['property']._array[key].name);
+            });
+
+        }).catch(function (error) {
+           console.log((error));
+        });
+
+        // wenn input, dann überschreiben
+        // shaclGraph = shaclGraphInput;
+
+
         /**
-         * PART III: CONVERT SHACL SHAPE GRAPH TO JSON
+         * PART III: CONVERT SHACL SHAPE GRAPH TO JSON AND MAKE MAPPER
          */
 
         // Convert Shacl Shape Graph to JSON
@@ -389,7 +441,6 @@ jQuery(document).ready(function($) {
         return false;
     });
 
-
     /**
      * PART V: INPUT USERDATA AND GENERATE RDF GRAPH
      */
@@ -475,6 +526,28 @@ jQuery(document).ready(function($) {
         console.log("RDF DATA GRAPH:");
         console.log(triple.toString());
 
+
+        // Serializer
+        /*
+
+         var serializer = new NTriplesSerializer()
+
+         var simpleGraph = rdf.createGraph()
+
+         simpleGraph.add(rdf.createTriple(
+         rdf.createNamedNode('http://example.org/subject'),
+         rdf.createNamedNode('http://example.org/predicate'),
+         rdf.createLiteral('object')
+         ))
+
+         //simpleGraph.add(shaclGraph.toString());
+
+         serializer.serialize(shaclGraph).then(function (nTriples) {
+         console.log(nTriples);
+         })
+         */
+
+        // GUI output
         $.each(triple, function (key) {
             $('#rdf-graph').text(triple.toString());
         });
@@ -579,5 +652,4 @@ jQuery(document).ready(function($) {
         }
         return this;
     };
-
 });
