@@ -297,8 +297,8 @@ jQuery(document).ready(function($) {
             } else {
                 shaclForm[key] = {
                     "type": "text",
-                    "label": shaclPath,
-                    "name": shaclName
+                    "label": shaclName,
+                    "name": shaclPath
                 }
             }
         });
@@ -323,8 +323,8 @@ jQuery(document).ready(function($) {
                 shaclFormTemp.push(
                     {
                         "type": "text",
-                        "label": shaclPathSub,
-                        "name": shaclNameSub,
+                        "label": shaclNameSub,
+                        "name": shaclPathSub,
                         "class": "inputSub",
                         "parentNode": shaclNodeSub,
                         "parentPath": shaclParentPath
