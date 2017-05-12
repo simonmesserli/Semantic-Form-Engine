@@ -324,7 +324,7 @@ jQuery(document).ready(function($) {
          * PART III: CONVERT SHACL SHAPE GRAPH TO JSON AND MAKE MAPPER
          */
 
-        // Convert Shacl Shape Graph to JSON
+            // Convert Shacl Shape Graph to JSON
         var shaclForm = [];
 
         $.each(shaclGraph['property']._array, function (key) {
@@ -349,8 +349,8 @@ jQuery(document).ready(function($) {
             } else {
                 shaclForm[key] = {
                     "type": "text",
-                    "label": shaclPath,
-                    "name": shaclName
+                    "label": shaclName,
+                    "name": shaclPath
                 }
             }
         });
@@ -375,8 +375,8 @@ jQuery(document).ready(function($) {
                 shaclFormTemp.push(
                     {
                         "type": "text",
-                        "label": shaclPathSub,
-                        "name": shaclNameSub,
+                        "label": shaclNameSub,
+                        "name": shaclPathSub,
                         "class": "inputSub",
                         "parentNode": shaclNodeSub,
                         "parentPath": shaclParentPath
@@ -384,6 +384,7 @@ jQuery(document).ready(function($) {
                 )
             });
         });
+
 
         function findParentPath (shaclNodeSub) {
             var parentPath;
