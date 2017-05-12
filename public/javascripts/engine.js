@@ -1,7 +1,5 @@
 jQuery(document).ready(function($) {
 
-    // Test
-
     // INIT
     $('.cl-form-builder').toggle();
     $('.cl-rdf').toggle();
