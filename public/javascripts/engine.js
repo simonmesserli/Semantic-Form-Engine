@@ -273,7 +273,7 @@ jQuery(document).ready(function($) {
          * PART III: CONVERT SHACL SHAPE GRAPH TO JSON AND MAKE MAPPER
          */
 
-        // Convert Shacl Shape Graph to JSON
+            // Convert Shacl Shape Graph to JSON
         var shaclForm = [];
 
         $.each(shaclGraph['property']._array, function (key) {
@@ -333,6 +333,7 @@ jQuery(document).ready(function($) {
                 )
             });
         });
+
 
         function findParentPath (shaclNodeSub) {
             var parentPath;
