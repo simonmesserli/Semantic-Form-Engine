@@ -516,7 +516,7 @@ jQuery(document).ready(function($) {
                 graphBlankNode[keyA]['@type'] = shaclData[keyA].classBN;
 
                 $.each(inputFields, function (keyB) {
-                   if (shaclData[keyA].name === shaclData[kveyB].parentPath) {
+                   if (shaclData[keyA].name === shaclData[keyB].parentPath) {
                        graphBlankNode[keyA][shaclData[keyB].name] = inputFields[keyB].value;
                    }
                 });
