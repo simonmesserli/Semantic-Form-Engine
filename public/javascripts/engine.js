@@ -9,7 +9,7 @@ jQuery(document).ready(function($) {
     var lovAPIProperty = lovAPI('property');
 
     /**
-     * Part I: SHACL FORM BUILDER GUI
+     * Part I: SHAPE BUILDER GUI
     **/
 
     // Add newField Options
@@ -29,7 +29,8 @@ jQuery(document).ready(function($) {
             // Checkbox checked
             $("#checkBoxProperty" + x + "").change(function(){
                 if (this.checked) {
-                    $(this).parent('div').append('<button type="button" id="add-sub" class="sub">Add Field</button>');
+                    $(this).parent('div').append('<button type="button" id="add-sub" class="sub">Add Property</button>');
+                    $(this).parent('div').append('<label class="sub">Class Level 2</label>');
                     $(this).parent('div').append('<input type="text" name="shaclClassSub'+ x +'" class="generateShaclClassSub" size="40">');
                     $('.generateShaclClassSub').autocomplete(lovAPIClass);
 
@@ -165,7 +166,7 @@ jQuery(document).ready(function($) {
         });
 
 
-        // Graph it (SHACL GRAPH)
+        // Graph it (SHACL SHAPE GRAPH)
 
         // SHACL GRAPH CLASS
         $.each(inputShaclBuilder, function (key) {
@@ -550,14 +551,27 @@ jQuery(document).ready(function($) {
 
     // Generates new HTML Input Field
     function newField(name, className) {
+        if (name === 'propertySub') {
+            $('<div class= ' + className + '>' +
+                '<label>Property</label>' +
+                '<input type="text" name="'+ name + x + '" size="40" />' +
+                '<a href="#" class="remove_field">Remove</a> ' +
+                '</div>')
+                .insertBefore( "#generateShacl" );
+            // add LOV API autocomplete
+            $('input[name=propertySub'+x+']').autocomplete(lovAPIProperty);
+
+        } else {
         $('<div class= ' + className + '>' +
+            '<label>Property</label>' +
             '<input type="checkbox" name="hasSub" id="checkBoxProperty' + x + '"/>' +
             '<input type="text" name="'+ name + x + '" size="40" />' +
             '<a href="#" class="remove_field">Remove</a> ' +
             '</div>')
             .insertBefore( "#generateShacl" );
-        $('input[name=property'+x+']').autocomplete(lovAPIProperty);
-        $('input[name=propertySub'+x+']').autocomplete(lovAPIProperty);
+            $('input[name=property'+x+']').autocomplete(lovAPIProperty);
+            // add LOV API autocomplete
+        }
     }
 
     // remove field

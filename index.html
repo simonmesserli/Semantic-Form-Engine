@@ -23,20 +23,20 @@
 <div class="container">
     <div class="row">
         <div class="twelve columns">
-            <h3>SHACL Builder</h3>
+            <h3>SHAPE Builder</h3>
         </div>
     </div>
     <div class="row">
         <div class="six columns ui-menu ">
             <form action="#" id="shacl-form" class="cl-shacl-generator">
-                <label>Formular Klasse</label>
+                <label>Class</label>
                 <input type="text" name="shaclClass" class="generateShaclClass" size="40">
-                <input type="submit" id="generateShacl" value="Generieren">
+                <input type="submit" id="generateShacl" value="generate form">
             </form>
 
             <!-- Form Builder -->
             <div class="cl-form-builder">
-                <h3>Form Builder</h3>
+                <h3>Form</h3>
             </div>
 
             <div class="cl-form-builder">
@@ -44,13 +44,13 @@
                 <input type="text" id="subject" name="subject" value="http://example.org/subject" size="40">
                 <form action="#" id="html-form">
                     <div class="fb-render"> </div>
-                    <input type="submit" id="generateRDF" value="RDF Go">
+                    <input type="submit" id="generateRDF" value="generate rdf graph">
                 </form>
             </div>
 
             <!-- RDF -->
             <div class="cl-rdf">
-                <h3>RDF</h3>
+                <h3>RDF Graph</h3>
             </div>
             <div class="cl-rdf-graph">
                 <div id="rdf-graph"></div>
@@ -58,7 +58,7 @@
         </div>
 
         <div class="two columns">
-            <button type="button" id="add-shacl">add field</button>
+            <button type="button" id="add-shacl">add property</button>
             <button type="button" id="reset">Reset</button>
         </div>
 
