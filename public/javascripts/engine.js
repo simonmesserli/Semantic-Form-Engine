@@ -1,3 +1,4 @@
+// Simon Messerli 2017 (c)
 jQuery(document).ready(function($) {
 
     // INIT
@@ -14,7 +15,7 @@ jQuery(document).ready(function($) {
 
     // Add newField Options
     var max_fields = 30; // maximum input boxes allowed
-    var x = 0; //initilal text box count
+    var x = 0; //initial text box count
 
     // For Static HTML fields
     $('.generateShaclClass').autocomplete(lovAPIClass);
