@@ -10,7 +10,7 @@ jQuery(document).ready(function($) {
     var lovAPIProperty = lovAPI('property');
 
     /**
-     * Part I: SHAPE BUILDER GUI
+     * Part I: SHAPE BUILDER (GUI)
     **/
 
     // Add newField Options

@@ -1,5 +1,3 @@
-# SHACL-Builder-Engine
+# Semantic-Form-Engine
 
-Prototyp
-
-### work in progress
+### Prototyp
