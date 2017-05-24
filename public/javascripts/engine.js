@@ -1,4 +1,4 @@
-// Simon Messerli 2017 (c)
+// Simon Messerli 2017 ©
 jQuery(document).ready(function($) {
 
     // INIT
